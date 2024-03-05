@@ -54,8 +54,10 @@
         - { regexp: '^ENABLE_PSADWATCHD', line: 'ENABLE_PSADWATCHD Y;'}
         - { regexp: '^ENABLE_AUTO_IDS ', line: 'ENABLE_AUTO_IDS Y;'}
         - { regexp: '^ENABLE_AUTO_IDS_EMAILS', line: 'ENABLE_AUTO_IDS_EMAILS Y;'}
-        - { regexp: '^AUTO_IDS_DANGER_LEVEL', line: 'AUTO_IDS_DANGER_LEVEL 3;'}
+        - { regexp: '^AUTO_IDS_DANGER_LEVEL', line: 'AUTO_IDS_DANGER_LEVEL 4;'}
         - { regexp: '^HOSTNAME', line: 'HOSTNAME {{ ansible_hostname }};'}
+        - { regexp: '^EMAIL_THROTTLE_INTERVAL', line: 'EMAIL_THROTTLE_INTERVAL 3600;' }
+        - { regexp: '^EMAIL_THROTTLE_LIMIT', line: 'EMAIL_THROTTLE_LIMIT 2;' }
       notify: restart psad service
 
     - name: add logging to ufw before.rules

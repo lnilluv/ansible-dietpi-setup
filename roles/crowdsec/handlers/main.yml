@@ -1,4 +1,10 @@
-    - name: Restart Crowdsec
-      service:
-        name: crowdsec
-        state: restarted
+---
+- name: Restart Crowdsec service
+  systemd:
+    name: crowdsec
+    state: restarted
+
+- name: Restart Crowdsec iptables bouncer service
+  systemd:
+    name: crowdsec-firewall-bouncer
+    state: restarted

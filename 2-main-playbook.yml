@@ -12,9 +12,9 @@
         - password-quality
         - unattended-upgrades
         - firewall
-        # mail
+        - mail
         - clamav
         - rkhunter
-        - auditd
+        - auditdsudo
         - lynis
-        - crowdsec
+        # crowdsec

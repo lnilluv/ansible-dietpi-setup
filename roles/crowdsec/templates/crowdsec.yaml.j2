@@ -1,16 +1,9 @@
-api_url: http://localhost:8080
-api_key: {{ crowdsec_api_key }}
-
-db_config:
-  type: sqlite
-  path: /var/lib/crowdsec/data/crowdsec.db
-
 common:
   daemonize: true
-  pid_dir: /var/run/
-  log_media: file
-  log_level: {{ crowdsec_log_level }}
-  log_dir: /var/log/
+  log_level: info
+  log_format: json
+  log_max_size: 500
+  log_max_files: 3
 
 prometheus:
   enabled: true
@@ -18,24 +11,24 @@ prometheus:
   listen_addr: 127.0.0.1
   listen_port: 6060
 
-acquis:
-  files:
-    - /var/log/auth.log
-    - /var/log/syslog
-  labels:
-    type: syslog
-
-parser:
-  user_agent_cache_size: 1000
-
-scenario:
-  default_duration: 4h
-  default_capacity: 5
-
 api:
   client:
     insecure_skip_verify: false
   server:
-    listen_uri: localhost:8080
+    listen_uri: http://127.0.0.1:8080
+    profiles_path: /etc/crowdsec/profiles.yaml
     online_client: # Crowdsec Central API credentials
       credentials_path: /etc/crowdsec/online_api_credentials.yaml
+
+crowdsec_service:
+  acquisition_path: /etc/crowdsec/acquis.yaml
+  parser_routines: 1
+  simulation_path: /etc/crowdsec/simulation.yaml
+  notification_path: /etc/crowdsec/notifications.yaml
+
+plugin_config:
+  ssh-bf:
+    service: sshd
+    log_prefix: sshd
+    cache_size: 1000
+    cache_expire: 4h

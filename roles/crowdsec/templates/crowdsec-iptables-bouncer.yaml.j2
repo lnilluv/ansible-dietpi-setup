@@ -1,0 +1,16 @@
+mode: iptables
+pid_dir: /var/run/
+update_frequency: 10s
+daemonize: true
+log_mode: file
+log_dir: /var/log/
+log_level: info
+api_url: http://localhost:8080/
+api_key: "{{ lapi_key_output.stdout }}"
+iptables_chains:
+  - INPUT
+  - FORWARD
+blacklists_ipv4:
+  - crowdsec-blacklists
+blacklists_ipv6:
+  - crowdsec6-blacklists

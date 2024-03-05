@@ -1,42 +1,49 @@
 ---
-- name: Add Crowdsec repository
-  apt_repository:
-    repo: deb {{ crowdsec_repo_url }}/{{ ansible_distribution_release }} {{ ansible_distribution_release }} main
-    state: present
-
 - name: Install Crowdsec package
   apt:
     name: crowdsec
     state: present
     update_cache: yes
-  when: crowdsec_agent_version == "latest"
 
-- name: Install specific Crowdsec version
+- name: Remove Crowdsec iptables bouncer package if installed
   apt:
-    name: crowdsec={{ crowdsec_agent_version }}
+    name: crowdsec-firewall-bouncer-iptables
+    state: absent
+  register: bouncer_remove_result
+  ignore_errors: yes
+
+- name: Install Crowdsec iptables bouncer package
+  apt:
+    name: crowdsec-firewall-bouncer-iptables
     state: present
-  when: crowdsec_agent_version != "latest"
+  register: bouncer_install_result
+
+- name: Generate Crowdsec LAPI key
+  command: sudo cscli bouncers add iptables-bouncer
+  register: lapi_key_output
 
 - name: Configure Crowdsec
   template:
     src: crowdsec.yaml.j2
     dest: /etc/crowdsec/config.yaml
-    owner: root
-    group: root
-    mode: '0644'
-  notify: Restart Crowdsec
+  notify:
+    - Restart Crowdsec service
 
-- name: Configure Crowdsec firewall bouncer
+- name: Configure Crowdsec iptables bouncer
   template:
-    src: crowdsec-firewall-bouncer.yaml.j2
-    dest: /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml
-    owner: root
-    group: root
-    mode: '0644'
-  notify: Restart Crowdsec
+    src: crowdsec-firewall-bouncer-iptables.yaml.j2
+    dest: /etc/crowdsec/bouncers/crowdsec-firewall-bouncer-iptables.yaml
+  notify:
+    - Restart Crowdsec iptables bouncer service
 
 - name: Start and enable Crowdsec service
-  service:
+  systemd:
     name: crowdsec
+    state: started
+    enabled: yes
+
+- name: Start and enable Crowdsec iptables bouncer service
+  systemd:
+    name: crowdsec-firewall-bouncer
     state: started
     enabled: yes
