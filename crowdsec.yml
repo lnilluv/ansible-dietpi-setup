@@ -3,8 +3,7 @@
       remote_user: "{{ user_name }}"
       gather_facts: yes
       vars_files: ./group_vars/variables.yml
-      gather_facts: yes # You may not need this if you have fact gathering disabled in your ansible.cfg
-      connection: ssh # Change to 'paramiko' if you face any issues
+      connection: ssh
       vars:
         ansible_ssh_private_key_file: "{{ ssh_location }}"
         ansible_ssh_port: "{{ ssh_port }}"
