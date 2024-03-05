@@ -1,0 +1,41 @@
+api_url: http://localhost:8080
+api_key: {{ crowdsec_api_key }}
+
+db_config:
+  type: sqlite
+  path: /var/lib/crowdsec/data/crowdsec.db
+
+common:
+  daemonize: true
+  pid_dir: /var/run/
+  log_media: file
+  log_level: {{ crowdsec_log_level }}
+  log_dir: /var/log/
+
+prometheus:
+  enabled: true
+  level: full
+  listen_addr: 127.0.0.1
+  listen_port: 6060
+
+acquis:
+  files:
+    - /var/log/auth.log
+    - /var/log/syslog
+  labels:
+    type: syslog
+
+parser:
+  user_agent_cache_size: 1000
+
+scenario:
+  default_duration: 4h
+  default_capacity: 5
+
+api:
+  client:
+    insecure_skip_verify: false
+  server:
+    listen_uri: localhost:8080
+    online_client: # Crowdsec Central API credentials
+      credentials_path: /etc/crowdsec/online_api_credentials.yaml

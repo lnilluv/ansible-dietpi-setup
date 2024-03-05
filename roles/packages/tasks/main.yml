@@ -7,7 +7,7 @@
     - name: install packages
       become: true
       apt:
-        name: 
+        name:
           - apt-transport-https
           - ca-certificates
           - host
@@ -19,7 +19,6 @@
           - apticron
           - ufw
           - psad
-          - fail2ban
           - msmtp
           - msmtp-mta
           - mailutils

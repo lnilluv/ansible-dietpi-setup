@@ -1,0 +1,4 @@
+    - name: Restart Crowdsec
+      service:
+        name: crowdsec
+        state: restarted

@@ -1,0 +1,32 @@
+mode: iptables
+pid_dir: /var/run/
+update_frequency: 10s
+daemonize: true
+log_level: {{ crowdsec_bouncer_log_level }}
+log_dir: /var/log/
+
+api_url: http://localhost:8080
+api_key: {{ crowdsec_api_key }}
+
+deny_log_prefix: "crowdsec: "
+deny_log_suffix: " denied"
+
+iptables_chains:
+  - crowdsec-blacklists
+  - crowdsec-drop
+
+blacklists:
+  service: # SSH banning
+    log: true
+    mode: append
+    timeout: 4h
+    iptables_chain: crowdsec-blacklists
+    protocol: tcp
+    ports:
+      - "22"
+
+  networks: # Outgoing IP banning
+    log: true
+    mode: append
+    timeout: 4h
+    iptables_chain: crowdsec-drop
