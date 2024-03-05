@@ -1,0 +1,27 @@
+- name: Import Tailscale's GPG key
+  ansible.builtin.apt_key:
+    url: https://pkgs.tailscale.com/stable/debian/bullseye.gpg
+    state: present
+
+- name: Add Tailscale repository
+  ansible.builtin.apt_repository:
+    repo: deb https://pkgs.tailscale.com/stable/debian bullseye main
+    state: present
+    update_cache: yes
+
+- name: Install Tailscale
+  ansible.builtin.apt:
+    name: tailscale
+    state: latest
+    update_cache: yes
+
+- name: Enable and start Tailscale service
+  ansible.builtin.systemd:
+    name: tailscaled
+    enabled: yes
+    state: started
+
+- name: Authenticate Tailscale with OAuth key
+  ansible.builtin.shell:
+    cmd: "tailscale up --reset --authkey {{ oauth_key }} --advertise-tags=tag:admin"
+  become: true

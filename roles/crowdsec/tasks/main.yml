@@ -1,0 +1,66 @@
+---
+- name: Install CrowdSec
+  apt:
+    name: crowdsec
+    state: present
+  when: crowdsec_agent_version == "latest"
+
+- name: Install specific CrowdSec version
+  apt:
+    name: crowdsec={{ crowdsec_agent_version }}
+    state: present
+  when: crowdsec_agent_version != "latest"
+
+- name: Configure CrowdSec API key
+  replace:
+    path: /etc/crowdsec/config.yaml
+    regexp: 'api_key: .*'
+    replace: 'api_key: {{ crowdsec_api_key }}'
+
+- name: Configure CrowdSec bouncer
+  replace:
+    path: /etc/crowdsec/config.yaml
+    regexp: 'bouncer_enabled: .*'
+    replace: 'bouncer_enabled: {{ crowdsec_bouncer_enabled }}'
+  replace:
+    path: /etc/crowdsec/config.yaml
+    regexp: 'bouncer_port: .*'
+    replace: 'bouncer_port: {{ crowdsec_bouncer_port }}'
+  replace:
+    path: /etc/crowdsec/config.yaml
+    regexp: 'bouncer_max_connections: .*'
+    replace: 'bouncer_max_connections: {{ crowdsec_bouncer_max_connections }}'
+
+- name: Configure CrowdSec firewall
+  replace:
+    path: /etc/crowdsec/config.yaml
+    regexp: 'firewall_enabled: .*'
+    replace: 'firewall_enabled: {{ crowdsec_firewall_enabled }}'
+  replace:
+    path: /etc/crowdsec/config.yaml
+    regexp: 'firewall_action: .*'
+    replace: 'firewall_action: {{ crowdsec_firewall_action }}'
+
+- name: Configure CrowdSec logging
+  replace:
+    path: /etc/crowdsec/config.yaml
+    regexp: 'logging_enabled: .*'
+    replace: 'logging_enabled: {{ crowdsec_logging_enabled }}'
+  replace:
+    path: /etc/crowdsec/config.yaml
+    regexp: 'logging_file: .*'
+    replace: 'logging_file: {{ crowdsec_logging_file }}'
+  replace:
+    path: /etc/crowdsec/config.yaml
+    regexp: 'logging_level: .*'
+    replace: 'logging_level: {{ crowdsec_logging_level }}'
+  replace:
+    path: /etc/crowdsec/config.yaml
+    regexp: 'logging_max_size: .*'
+    replace: 'logging_max_size: {{ crowdsec_logging_max_size }}'
+
+- name: Start CrowdSec service
+  service:
+    name: crowdsec
+    state: started
+    enabled: yes
