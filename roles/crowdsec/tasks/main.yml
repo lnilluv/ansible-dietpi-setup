@@ -1,49 +1,42 @@
 ---
-- name: Install Crowdsec package
+# tasks file for crowdsec-plus-console
+
+- fail:
+    msg: "bailing out, this role requires 'crowdsec_enroll_key'  and 'crowdsec_enroll_name' to be defined."
+  when:
+  - crowdsec_enroll_key is not defined
+  - crowdsec_enroll_name is not defined
+
+- name: download crowdsec repo install script
+  get_url: url=https://packagecloud.io/install/repositories/crowdsec/crowdsec/script.deb.sh dest=/root/crowdsecinstaller.sh mode=0755
+  become: yes
+
+- name: execute crowdsec repo install script
+  shell: /root/crowdsecinstaller.sh
+  become: yes
+
+- name: remove the crowdsec repo install script
+  file: path=/root/crowdsecinstaller.sh state=absent
+
+- name: adds crowdsec package
   apt:
     name: crowdsec
     state: present
-    update_cache: yes
+  become: yes
 
-- name: Remove Crowdsec iptables bouncer package if installed
-  apt:
-    name: crowdsec-firewall-bouncer-iptables
-    state: absent
-  register: bouncer_remove_result
-  ignore_errors: yes
-
-- name: Install Crowdsec iptables bouncer package
+- name: adds crowdsec-firewall-bouncer-iptables package
   apt:
     name: crowdsec-firewall-bouncer-iptables
     state: present
-  register: bouncer_install_result
+  become: yes
 
-- name: Generate Crowdsec LAPI key
-  command: sudo cscli bouncers add iptables-bouncer
-  register: lapi_key_output
+- name: install whitelist-good-actors collection
+  shell: cscli collections install crowdsecurity/whitelist-good-actors
+  when: crowdsec_whitelist_good_actors | bool
+  become: yes
 
-- name: Configure Crowdsec
-  template:
-    src: crowdsec.yaml.j2
-    dest: /etc/crowdsec/config.yaml
-  notify:
-    - Restart Crowdsec service
+- name: enrolls this machine to crowdsec console
+  command: cscli console enroll --name {{ crowdsec_enroll_name }} {{ crowdsec_enroll_key }}
+  become: yes
 
-- name: Configure Crowdsec iptables bouncer
-  template:
-    src: crowdsec-firewall-bouncer-iptables.yaml.j2
-    dest: /etc/crowdsec/bouncers/crowdsec-firewall-bouncer-iptables.yaml
-  notify:
-    - Restart Crowdsec iptables bouncer service
-
-- name: Start and enable Crowdsec service
-  systemd:
-    name: crowdsec
-    state: started
-    enabled: yes
-
-- name: Start and enable Crowdsec iptables bouncer service
-  systemd:
-    name: crowdsec-firewall-bouncer
-    state: started
-    enabled: yes
+...

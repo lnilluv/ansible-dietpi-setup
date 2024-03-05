@@ -15,6 +15,6 @@
         - mail
         - clamav
         - rkhunter
-        - auditdsudo
+        - auditd
         - lynis
         # crowdsec
