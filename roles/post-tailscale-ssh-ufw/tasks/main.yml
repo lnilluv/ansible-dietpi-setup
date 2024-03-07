@@ -1,0 +1,92 @@
+- name: Configure SSH to allow access only through Tailscale
+  become: true
+  block:
+    - name: Update SSH configuration
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+      loop:
+        - { regexp: "^Port", line: "Port 22" }
+        - { regexp: "^ListenAddress", line: "ListenAddress 127.0.0.1" }
+        - { regexp: "^AllowTcpForwarding", line: "AllowTcpForwarding no" }
+        - {
+            regexp: "^AllowStreamLocalForwarding",
+            line: "AllowStreamLocalForwarding no",
+          }
+        - { regexp: "^GatewayPorts", line: "GatewayPorts no" }
+        - { regexp: "^PermitTunnel", line: "PermitTunnel no" }
+        - { regexp: "^AllowAgentForwarding", line: "AllowAgentForwarding no" }
+      notify: restart ssh service
+
+    - name: Remove unnecessary SSH configuration
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        state: absent
+        regexp: "{{ item }}"
+      loop:
+        - "^AllowGroups"
+        - "^ClientAliveCountMax"
+        - "^ClientAliveInterval"
+        - "^LoginGraceTime"
+        - "^MaxAuthTries"
+        - "^MaxSessions"
+        - "^MaxStartups"
+      notify: restart ssh service
+
+- name: Configure UFW to allow SSH through Tailscale
+  become: true
+  block:
+    - name: Set default policy to deny incoming traffic
+      ufw:
+        default: deny
+        direction: incoming
+      notify: restart ufw service
+
+    - name: Set default policy to allow outgoing traffic
+      ufw:
+        default: allow
+        direction: outgoing
+      notify: restart ufw service
+
+    - name: Allow SSH through Tailscale
+      ufw:
+        rule: allow
+        direction: in
+        interface: tailscale0
+        to_port: "22"
+      notify: restart ufw service
+
+    - name: Remove unnecessary UFW rules
+      ufw:
+        rule: "{{ item.rule }}"
+        direction: "{{ item.direction }}"
+        delete: yes
+      loop:
+        - { rule: "limit", direction: "in", to_port: "{{ ssh_port }}" }
+        - { rule: "allow", direction: "out", to_port: "{{ mail_port }}" }
+      notify: restart ufw service
+
+- name: Remove PSAD configuration
+  become: true
+  block:
+    - name: Remove PSAD configuration file
+      file:
+        path: /etc/psad/psad.conf
+        state: absent
+
+    - name: Remove PSAD logging from UFW rules
+      blockinfile:
+        dest: "{{ item }}"
+        state: absent
+        marker: "# {mark} ANSIBLE MANAGED BLOCK"
+      loop:
+        - /etc/ufw/before.rules
+        - /etc/ufw/before6.rules
+      notify: restart ufw service
+
+    - name: Stop and disable PSAD service
+      systemd:
+        name: psad
+        state: stopped
+        enabled: no

@@ -1,11 +1,11 @@
 - name: Import Tailscale's GPG key
   ansible.builtin.apt_key:
-    url: https://pkgs.tailscale.com/stable/debian/bullseye.gpg
+    url: https://pkgs.tailscale.com/stable/debian/bookworm.gpg
     state: present
 
 - name: Add Tailscale repository
   ansible.builtin.apt_repository:
-    repo: deb https://pkgs.tailscale.com/stable/debian bullseye main
+    repo: deb https://pkgs.tailscale.com/stable/debian bookworm main
     state: present
     update_cache: yes
 
@@ -23,5 +23,5 @@
 
 - name: Authenticate Tailscale with OAuth key
   ansible.builtin.shell:
-    cmd: "tailscale up --reset --authkey {{ oauth_key }} --advertise-tags=tag:admin"
+    cmd: "tailscale up --reset --authkey {{ oauth_key }} --advertise-tags=tag:others"
   become: true

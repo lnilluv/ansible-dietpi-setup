@@ -1,0 +1,12 @@
+---
+- name: Run playbook1
+  import_playbook: 1-requirements-playbook.yml
+
+- name: Run playbook2
+  import_playbook: 2-main-playbook.yml
+
+- name: Run playbook3
+  import_playbook: 3-crowdsec.yml
+
+- name: Run playbook4
+  import_playbook: 4-tailscale.yml
