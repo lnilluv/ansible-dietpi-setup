@@ -11,4 +11,4 @@
     ansible_ssh_port: "{{ ssh_port }}"
     ansible_become: true
   roles:
-    - artis3n.tailscale
+    - post-tailscale-ssh-ufw
